@@ -70,7 +70,7 @@ known_archs = [
   ("bfd_arch_pj",       "print_insn_pj",            "print_insn_pj",            "Pico Java architecture"),
   ("bfd_arch_avr",      "print_insn_avr",           "print_insn_avr",           "Atmel AVR microcontrollers."),
   ("bfd_arch_bfin",     "print_insn_bfin",          "print_insn_bfin",          "ADI Blackfin"),
-  ("bfd_arch_cr16",     "print_insn_cr16",          "print_insn_cr1",           "National Semiconductor CompactRISC (ie CR16)."),
+  ("bfd_arch_cr16",     "print_insn_cr16",          "print_insn_cr16",          "National Semiconductor CompactRISC (ie CR16)."),
   ("bfd_arch_cr16c",    "print_insn_cr16",          "print_insn_cr16",          "National Semiconductor CompactRISC."),
   ("bfd_arch_crx",      "print_insn_crx",           "print_insn_crx",           "National Semiconductor CRX."),
   ("bfd_arch_rx",       "print_insn_rx",            "print_insn_rx",            "Renesas RX."),
@@ -242,8 +242,7 @@ def generate_supported_architectures_source(supported_archs, supported_machines)
         "\n".join(arch_entries),
         "\n".join(mach_entries))
 
-def get_supported_architectures(path_to_nm, path_to_libopcodes,
-    shared):
+def get_supported_architectures(path_to_nm, path_to_libopcodes, supported_machines, shared):
     # Build the command line.
     cmdline = [path_to_nm,]
     if sys.platform != "darwin" and shared:
@@ -272,9 +271,18 @@ def get_supported_architectures(path_to_nm, path_to_libopcodes,
 
     supported_archs = []
 
+    supported_machines = set( [m[0] for m in supported_machines] )
+
     for arch, little, big, comment in known_archs:
+
+        if arch == "bfd_arch_k1om" and "bfd_mach_k1om" not in supported_machines:
+            continue
+        if arch == "bfd_arch_l1om" and "bfd_mach_l1om" not in supported_machines:
+            continue
+
         if little in syms_found and big in syms_found:
             supported_archs.append( (arch, little, big, comment) )
+
 
     return supported_archs
 

@@ -15,7 +15,7 @@
 #ifdef __APPLE__
 // TODO : Make sure this kludge can't be fixed otherwise.
 // This is required by OSX because is'nt defined by the loader.
-char** environ; 
+char** environ;
 #endif
 
 //

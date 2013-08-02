@@ -169,13 +169,15 @@ class CustomBuildExtension( build_ext ):
         # Step 2 .
         #
         # Prepare the libs to be used as option of the compiler.
-        supported_archs = get_supported_architectures(
-            path_to_nm,
-            libopcodes, 
-            self.with_static_binutils == None)
 
         path_to_bfd_header = os.path.join( self.includes, "bfd.h")
         supported_machines = get_supported_machines(path_to_bfd_header)
+
+        supported_archs = get_supported_architectures(
+            path_to_nm,
+            libopcodes, 
+            supported_machines,
+            self.with_static_binutils == None)
 
         source_bfd_archs_c = generate_supported_architectures_source(supported_archs, supported_machines)
         print "[+] Generating .C files..."
@@ -202,7 +204,7 @@ class CustomBuildExtension( build_ext ):
             output_dir = PACKAGE_DIR
         )
         gen_tool = os.path.join(PACKAGE_DIR, "gen_bfd_archs")
-        gen_file = os.path.join(PACKAGE_DIR, "bfd_archs.py")
+        gen_file = os.path.join(self.build_lib, PACKAGE_DIR, "bfd_archs.py")
         cmd = "%s > %s" % (
                     gen_tool,
                     gen_file  )
@@ -319,12 +321,14 @@ class CustomBuildExtension( build_ext ):
 
         #......
         for extension in self.extensions:
-           extension.include_dirs.append( self.includes )
-           if self.with_static_binutils:
-              extension.extra_objects.extend( [os.path.join(libraries_path,lib) for lib in libs] )
-           else:
-              extension.library_dirs.append( libraries_path )
-              extension.libraries.extend( [self.prepare_libs_for_cc(lib) for lib in libs] )
+            extension.include_dirs.append( self.includes )
+            if self.with_static_binutils:
+                extension.extra_objects.extend( [os.path.join(libraries_path,lib) for lib in libs] )
+            else:
+                extension.library_dirs.append( libraries_path )
+                extension.libraries.extend( [self.prepare_libs_for_cc(lib) for lib in libs] )
+                if sys.platform == "darwin":
+                    extension.libraries.append("intl") # in darwin, we have to link against libintl
 
         ret = build_ext.build_extensions(self)
 
@@ -359,9 +363,6 @@ def main():
             author = __author__,
             author_email = __contact__,
             license = "GPLv2",
-            data_files = [
-                ("", ["pybfd/bfd_archs.py"])
-            ],
             cmdclass = {
                 "install": InstallCustomCommandLine,
                 "build": BuildCustomCommandLine,
