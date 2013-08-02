@@ -10,8 +10,8 @@ Usage
 ```python
 
     # Import the disassembly library (libopcodes)
-    from opcodes import Opcodes, OpcodesException
-    from bfd import Bfd, BfdException
+    from pybfd.opcodes import Opcodes, OpcodesException
+    from pybfd.bfd import Bfd, BfdException
 
     bfd = None
 
