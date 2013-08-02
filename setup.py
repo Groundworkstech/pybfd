@@ -343,7 +343,7 @@ def main():
             packages = [PACKAGE_DIR],
             description = __description__,
             long_description = __description__,
-            url = "http://oss.groundworkstech.com",
+            url = "https://github.com/Groundworkstech/pybfd",
             ext_modules = [
                 # These extensions will be augmented using runtime information
                 # in CustomBuildExtension
