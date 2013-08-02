@@ -1,0 +1,2 @@
+include AUTHORS LICENSE README.md
+recursive-include pybfd *
