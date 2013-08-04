@@ -15,7 +15,6 @@ _______             _______   ________  _______
 PyBFD
 =====
 
-aaa
 ## What is PyBFD?
 
 **A Python interface to the GNU Binary File Descriptor (BFD) library.**
@@ -190,7 +189,19 @@ script will lookup the system Binutils and detect its supported architecures and
 the resulting PyBFD installation will be the exact same as the one performed 
 using *easy_install*.
 
+## Sample python scripts
+
+There are a couple of sample scripts included in the PyBFD package including a
+partial (but completely usefull) reimplementation of objdump in Python using
+PyBFD called **objdump.py**.
+
+A basic sample code is located in *bfd.py*, *opcodes.py* and a more complete
+usage is shown in *objdump.py*.
+
 ## Basic usage example
+
+Bellow is a the code located at the end of *bfd.py* script:
+
 
 ```python
 
