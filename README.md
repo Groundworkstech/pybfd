@@ -102,6 +102,7 @@ In the following example the package binutils-multiarch was installed:
 architectures (see supported architectures section).
 * Then grab the latest PyBFD version and compile/link against it.
 
+```
     $ git clone https://github.com/Groundworkstech/pybfd.git
     $ cd pybfd
     $ python ./setup.py install --with-static-binutils=/path/to/specific/binutils
@@ -177,6 +178,8 @@ architectures (see supported architectures section).
         bfd_arch_tilegx      : Tilera TILE-Gx
         bfd_arch_aarch64     : ARM AArch64
         bfd_arch_rl78        : RL78
+```
+
 
 The *--with-static-binutils* command line parameter allows the installer script 
 to use a binutils installation different from the one installed on the system.
