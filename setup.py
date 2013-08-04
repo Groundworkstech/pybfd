@@ -348,6 +348,7 @@ def main():
             description = __description__,
             long_description = __description__,
             url = "https://github.com/Groundworkstech/pybfd",
+            zip_safe = False,
             ext_modules = [
                 # These extensions will be augmented using runtime information
                 # in CustomBuildExtension
