@@ -1,4 +1,3 @@
-
 ```
 _______             _______   ________  _______  
 |       \           |       \ |        \|       \ 
@@ -25,7 +24,7 @@ functionallity provided by GNU Binutils libopcodes and libbfd.
 This allows the user to manipulate all the supported architectures and file
 formats that Binutils tools does.
 
-## What are the supported architectures?
+## Supported architectures
 
 The PyBFD package installer (setup.py) will automagically detect the installed
 version of Binutils and extract all its supported architectures.
@@ -50,7 +49,7 @@ This includes THREE possibilities:
     (Position-Independent Code) enabled.
     Binutils source code can be obtained from <http://ftp.gnu.org/gnu/binutils/>
 
-## What are the supported platforms?
+## Supported platforms
 
 * **Linux** (developed under Ubuntu but all Debian derived distros should work).
 * **Mac OS X**
