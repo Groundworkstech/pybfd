@@ -200,7 +200,7 @@ usage is shown in *objdump.py*.
 
 ## Basic usage example
 
-Bellow is a the code located at the end of *bfd.py* script:
+Bellow is the code located at the end of *bfd.py* script:
 
 
 ```python
