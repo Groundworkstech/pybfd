@@ -203,10 +203,16 @@ Below is the code located at the end of *bfd.py* script:
 
 
 ```python
+    #!/usr/bin/env python
 
     # Import the disassembly library (libopcodes)
     from pybfd.opcodes import Opcodes, OpcodesException
     from pybfd.bfd import Bfd, BfdException
+
+    from sys import argv
+    if len(argv) == 1:
+        print "Usage : %s <filename>" % argv[0]
+        return
 
     bfd = None
 
@@ -217,7 +223,6 @@ Below is the code located at the end of *bfd.py* script:
         # in the same way.
         #
         print "[+] Creating BFD instance..."
-        #fd = open(argv[1], "r")
         bfd = Bfd(argv[1])
 
         # Print the file format and in case that its an archive then just show
