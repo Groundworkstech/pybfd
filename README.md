@@ -20,13 +20,13 @@ PyBFD
 **A Python interface to the GNU Binary File Descriptor (BFD) library.**
 
 It's a complete (or at least tries to be) wrapper around the low level
-functionallity provided by GNU Binutils libopcodes and libbfd.
+functionality provided by GNU Binutils libopcodes and libbfd.
 This allows the user to manipulate all the supported architectures and file
 formats that Binutils tools does.
 
 ## Supported architectures
 
-The PyBFD package installer (setup.py) will automagically detect the installed
+The PyBFD package installer (setup.py) will automatically detect the installed
 version of Binutils and extract all its supported architectures.
 
 This includes THREE possibilities:
@@ -41,7 +41,7 @@ This includes THREE possibilities:
     the same Binutils supporting the same host architecture as well as several
     well-known (and others not being in use since Woodstock :-P). It does not
     include ALL the supported architectures in Binutils but will include the
-    ones you'll bump into 99% of the time so that should be enought in most of
+    ones you'll bump into 99% of the time so that should be enough in most of
     the cases.
 
 * You can download and compile Binutils from GNU FTP server. The only rules to
@@ -184,14 +184,14 @@ architectures (see supported architectures section).
 The *--with-static-binutils* command line parameter allows the installer script 
 to use a binutils installation different from the one installed on the system.
 If the *-with-static-binutils* parameter is not specified then the installer 
-script will lookup the system Binutils and detect its supported architecures and 
+script will lookup the system Binutils and detect its supported architectures and 
 the resulting PyBFD installation will be the exact same as the one performed 
 using *easy_install*.
 
 ## Sample python scripts
 
 There are a couple of sample scripts included in the PyBFD package including a
-partial (but completely usefull) reimplementation of objdump in Python using
+partial (but completely useful) reimplementation of objdump in Python using
 PyBFD called **objdump.py**.
 
 A basic sample code is located in *bfd.py*, *opcodes.py* and a more complete
@@ -199,7 +199,7 @@ usage is shown in *objdump.py*.
 
 ## Basic usage example
 
-Bellow is the code located at the end of *bfd.py* script:
+Below is the code located at the end of *bfd.py* script:
 
 
 ```python
@@ -235,7 +235,7 @@ Bellow is the code located at the end of *bfd.py* script:
                     len(inner_bfd.sections),
                     len(inner_bfd.symbols))
 
-            # The bfd.close() is executed bellow in the finally clause.
+            # The bfd.close() is executed below in the finally clause.
             return
 
         #
