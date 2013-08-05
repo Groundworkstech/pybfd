@@ -42,7 +42,8 @@ This includes THREE possibilities:
     well-known (and others not being in use since Woodstock :-P). It does not
     include ALL the supported architectures in Binutils but will include the
     ones you'll bump into 99% of the time so that should be enough in most of
-    the cases.
+    the cases. 
+    Also, on Mac OSX Binutils can be installed using [MacPorts](www.macports.org) or [Homebrew](http://brew.sh/).
 
 * You can download and compile Binutils from GNU FTP server. The only rules to
     follow are that it must be compiled as a static library with with PIC
@@ -52,7 +53,8 @@ This includes THREE possibilities:
 ## Supported platforms
 
 * **Linux** (developed under Ubuntu but all Debian derived distros should work).
-* **Mac OS X**
+* **Mac OS X** (MacPorts and Homebrew)
+  * on OSX libintl must be installed to compile this extension (i.e. brew install gettext)
 
 Notice: Microsoft Windows is not supported at this time but there are plans to
         support it as well in a near future.
