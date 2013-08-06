@@ -814,7 +814,7 @@ def main():
             opcodes = Opcodes(bfd)
 
             # Set the code area we'll move through.
-            opcodes.initialize_smart_disassemble(content, bfd.start_address)
+            opcodes.initialize_smart_disassemble(content, section.vma)
 
             # Set an internal -ready to use- callback function to print disassembly
             # information from the current section content.
