@@ -19,10 +19,16 @@ from distutils.command.install import install
 
 __author__      = "Groundworks Technologies OSS Team"
 __contact__     = "oss@groundworkstech.com"
-__description__ = "Python BFD extension module (libbfd extension module)"
+__description__ = "A Python interface to the GNU Binary File Descriptor (BFD) library."
+__long_description__ = """
+It's a complete (or at least tries to be) wrapper around the low level
+functionality provided by GNU Binutils libopcodes and libbfd.
+This allows the user to manipulate all the supported architectures and file
+formats that Binutils tools does.
+"""
 __company__     = "Groundworks Technologies"
 __year__        = "2013"
-__version__     = "0.1.0"
+__version__     = "0.1.1"
 
 
 MODULE_NAME = "pybfd"
@@ -64,16 +70,23 @@ class CustomBuildExtension( build_ext ):
             "includes": [
                 "/usr/include"
             ],
-            "lib-ext": ".so",
+            "possible-lib-ext": [
+                ".so",
+            ]
         },
         "darwin": {
             "libs": [
-                "/opt/local/lib" # macports
+                "/opt/local/lib", # macports
+                "/usr/local/lib", # homebrew
             ],
             "includes": [
-                "/opt/local/include" # macports
+                "/opt/local/include", # macports
+                "/usr/local/include", # homebrew
             ],
-            "lib-ext": ".dylib",
+            "possible-lib-ext": [
+                ".a", # homebrew
+                ".dylib" # macports
+            ]
         }
     }
 
@@ -101,10 +114,9 @@ class CustomBuildExtension( build_ext ):
                 return False
         return True
 
-    def find_binutils_libs(self, libdir):
+    def find_binutils_libs(self, libdir, lib_ext):
         """Find Binutils libraries."""
-        print "[+] Searching binutils libraries..."
-        bfd_expr = re.compile("(lib(?:bfd)|(?:opcodes))(.*?)\%s" % self.platform["lib-ext"] )        
+        bfd_expr = re.compile("(lib(?:bfd)|(?:opcodes))(.*?)\%s" % lib_ext )        
         libs = {}
         for root, dirs, files in os.walk(libdir):
             for f in files:
@@ -115,7 +127,7 @@ class CustomBuildExtension( build_ext ):
                         libs[ version ].append( f )
                     else:
                         libs[ version ] = [f,]
-        
+
         # first, search for multiarch files.
         # check if we found more than one version of the multiarch libs.
         multiarch_libs = dict( [(v,_l) for v, _l in libs.items() \
@@ -131,8 +143,9 @@ class CustomBuildExtension( build_ext ):
     def prepare_libs_for_cc(self, lib):
         c = self.compiler.compiler_type
         if c == "unix":
-            if lib.startswith("lib") and lib.endswith( self.platform["lib-ext"] ):
-                return lib[3:-len(self.platform["lib-ext"])]
+            name, ext = os.path.splitext(lib)
+            if name.startswith("lib"):
+                return lib[3:-len(ext)]
         raise Exception("unable to prepare libraries for %s" % c )
 
     def generate_source_files( self ):
@@ -161,10 +174,20 @@ class CustomBuildExtension( build_ext ):
         print "[+] Detecting libbfd/libopcodes compiled architectures"
 
         if self.with_static_binutils: # use the nm from the binutils distro
-            path_to_nm = os.path.join( libs_dir, "..", "bin", "nm" )
+        
+            nms = [
+                os.path.join( libs_dir, "..", "bin", "nm" ), # default name of nm
+                os.path.join( libs_dir, "..", "bin", "gnm" ) # in OSX brew install binutils's nm as gnm.
+            ]
+            path_to_nm = None
+            for nm_fullpath in nms:
+                if os.path.isfile( nm_fullpath ):
+                    path_to_nm = nm_fullpath
+                    break
+            if path_to_nm == None:
+                raise Exception("no suitable 'nm' found.")            
         else:
-            path_to_nm = "nm"  # Use the nm in the $PATH
-
+            path_to_nm = "nm"  # Use the nm in the $PATH (TODO: its assume that nm exists)
         #
         # Step 2 .
         #
@@ -253,6 +276,11 @@ class CustomBuildExtension( build_ext ):
         """Compile the python extension module for further installation."""
         global final_supported_archs
 
+        ext_extra_objects = []
+        ext_libs = []
+        ext_libs_dir = []
+        ext_includes = []
+
         self.platform = CustomBuildExtension.PLATFORMS.get( sys.platform, None )
         if self.platform == None:
             raise Exception("unsupported platform: %s" % sys.platform)
@@ -262,37 +290,37 @@ class CustomBuildExtension( build_ext ):
             print "[+]   %s" % self.with_static_binutils
             self.platform["libs"] = [os.path.join( self.with_static_binutils, "lib"),]
             self.platform["includes"] = [os.path.join( self.with_static_binutils, "include"),]
-            self.platform["lib-ext"] = ".a" # for all unix platforms.
+            self.platform["possible-lib-ext"] = [".a",] # for all unix platforms.
 
         # check for known includes
-        incs_dirs = self.platform["includes"]
-
-        for inc in incs_dirs:
+        for inc in self.platform["includes"]:
             if self.check_includes(inc):
                 self.includes = inc # found a valid include dir with bintuils
                 break
-
         if self.includes == None:
             raise Exception("unable to determine correct include path for bfd.h / dis-asm.h")
 
         print "[+] Using binutils headers at:"
         print "[+]   %s" % self.includes
 
+        # we'll use this include path for building.
+        ext_includes = [self.includes, ]
+
         # Try to guess libopcodes / libbfd libs.
         libs_dirs = self.platform["libs"]
-
-        # Search for libs.
+        print "[+] Searching binutils libraries..."
         for libdir in libs_dirs:
-            libs = self.find_binutils_libs(libdir)
-            if libs:
-                self.libs = libdir, libs
-                break
+            for possible_lib_ext in self.platform["possible-lib-ext"]:
+                libs = self.find_binutils_libs(libdir, possible_lib_ext)
+                if libs:
+                    self.libs = libdir, libs
+                    break
 
         if self.libs == None:
             raise Exception("unable to find binutils libraries.")
+
         for lib in self.libs[1]:
             print "[+]   %s" % os.path.join(self.libs[0], lib)
-
         #
         # check for libopcodes / libbfd
         #
@@ -300,39 +328,54 @@ class CustomBuildExtension( build_ext ):
         if not all( [lib.startswith("libopcodes") or lib.startswith("libbfd") for lib in libs] ):
             raise Exception("missing expected library (libopcodes / libbfd) in %s." % libraries_path)
 
+        ext_libs_dir.append( libraries_path )
+    
         if self.with_static_binutils:
-            # add dependecy to libiberty
-            lib_liberty_partialpath = []
+            # use libs as extra objects...
+            ext_extra_objects.extend( [os.path.join(libraries_path,lib) for lib in libs] )
+        else:
+            ext_libs = [self.prepare_libs_for_cc(lib) for lib in libs]
+
+        # add dependecy to libiberty
+        if self.with_static_binutils or sys.platform == "darwin": # in OSX we always needs a static lib-iverty.
+            
+            lib_liberty_partialpath = [libraries_path,]
             if sys.platform == "darwin": # in osx the lib-iberty is prefixe by "machine" ppc/i386/x86_64
                 lib_liberty_partialpath.append( self._darwin_current_arch() )
             lib_liberty_partialpath.append( "libiberty.a" )
-
-            lib_liberty_partialpath = os.path.join(*lib_liberty_partialpath ) # merge the prefix and the path
-
-            if not os.path.isfile( os.path.join( libraries_path, lib_liberty_partialpath ) ):
+            
+            lib_liberty_fullpath = os.path.join(*lib_liberty_partialpath ) # merge the prefix and the path
+            if not os.path.isfile(lib_liberty_fullpath):
                 raise Exception("missing expected library (libiberty) in %s." % libraries_path)
-            libs.append( lib_liberty_partialpath )
+            ext_extra_objects.append(lib_liberty_fullpath)
         
         # generate .py / .h files that depends of libopcodes / libbfd currently selected
         final_supported_archs = self.generate_source_files()
-
+        
+        # final hacks for OSX
         if sys.platform == "darwin":
+            # fix arch value.
             os.environ["ARCHFLAGS"] = "-arch %s" % self._darwin_current_arch()
+            # In OSX we've to link against libintl.
+            ext_libs.append("intl")
 
-        #......
+            # TODO: we have to improve the detection of gettext/libintl in OSX.. this is a quick fix.
+            dirs = [
+                "/usr/local/opt/gettext/lib", # homebrew
+                "/opt/local/lib" # macports
+            ]
+            for d in dirs:
+                if os.path.exists(d):
+                    ext_libs_dir.append(d)            
+
+        # fix extensions.    
         for extension in self.extensions:
-            extension.include_dirs.append( self.includes )
-            if self.with_static_binutils:
-                extension.extra_objects.extend( [os.path.join(libraries_path,lib) for lib in libs] )
-            else:
-                extension.library_dirs.append( libraries_path )
-                extension.libraries.extend( [self.prepare_libs_for_cc(lib) for lib in libs] )
-                if sys.platform == "darwin":
-                    extension.libraries.append("intl") # in darwin, we have to link against libintl
+            extension.include_dirs.extend( ext_includes )
+            extension.extra_objects.extend( ext_extra_objects )
+            extension.libraries.extend( ext_libs )
+            extension.library_dirs.extend( ext_libs_dir )
 
-        ret = build_ext.build_extensions(self)
-
-        return ret
+        return build_ext.build_extensions(self)
          
 
 def main():
@@ -346,9 +389,8 @@ def main():
             version = __version__,
             packages = [PACKAGE_DIR],
             description = __description__,
-            long_description = __description__,
+            long_description = __long_description__,
             url = "https://github.com/Groundworkstech/pybfd",
-            zip_safe = False,
             ext_modules = [
                 # These extensions will be augmented using runtime information
                 # in CustomBuildExtension
