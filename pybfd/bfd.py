@@ -339,11 +339,13 @@ class Bfd(object):
 
                 # Create a new symbol instance to hold symbolic information.
                 new_symbol = Symbol(
-                    sections[symbol_section_index],
+                    sections.get(symbol_section_index, None),
                     symbol_name,
                     symbol_value,
                     symbol_flags)
 
+                if new_symbol.section is None:
+                    continue
                 symbol_address = new_symbol.section.vma + new_symbol.value
                 #if new_symbol.flags in \
                 #    [SymbolFlags.LOCAL , SymbolFlags.GLOBAL , SymbolFlags.EXPORT]:
