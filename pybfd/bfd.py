@@ -7,6 +7,7 @@
 
 from sys import argv, exit
 from types import FileType, StringType, IntType
+from os import dup
 from os.path import islink
 from traceback import print_exc, print_stack
 
@@ -139,7 +140,7 @@ class Bfd(object):
                 raise BfdException("Symlinks file-descriptors are not valid")
                     
             try:
-                self._ptr = _bfd.fdopenr(filename, target, _file.fileno())
+                self._ptr = _bfd.fdopenr(filename, target, dup(_file.fileno()))
             except Exception, err:
                 raise BfdException(
                     "Unable to open file-descriptor %s : %s" % (filename, err))
