@@ -698,7 +698,8 @@ enum {
     LMA,
     ALIGNMENT,
     FLAGS,
-    FILE_POS
+    FILE_POS,
+    ENTSIZE
 } section_attributes;
 
 static PyObject *
@@ -741,6 +742,10 @@ pybfd_get_section_attribute(PyObject *self, PyObject *args) {
 
         case FILE_POS:
             result = Py_BuildValue("i", section->filepos);
+            break;
+
+        case ENTSIZE:
+            result = Py_BuildValue("i", section->entsize);
             break;
 
         default:
