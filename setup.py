@@ -132,10 +132,10 @@ class CustomBuildExtension( build_ext ):
         # check if we found more than one version of the multiarch libs.
         multiarch_libs = dict( [(v,_l) for v, _l in libs.items() \
             if v.find("multiarch") != -1 ] )
-
         if len(multiarch_libs) > 1:
-            raise Exception("unable to determine correct binutils version.")
-        elif len(multiarch_libs) == 1:
+        	print "[W] Multiple binutils versions detected. Trying to build with default..."
+            	return multiarch_libs.values()[0]
+        if len(multiarch_libs) == 1:
             return multiarch_libs.values()[0]
         # or use the default libs, or .. none 
         return libs.get("",[])
