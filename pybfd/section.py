@@ -353,7 +353,8 @@ SectionAttributes = enum(
     "LMA",
     "ALIGNMENT",
     "FLAGS",
-    "FILE_POS"
+    "FILE_POS",
+    "ENTSIZE"
     )
 
 
@@ -463,6 +464,10 @@ class BfdSection(object):
     #@file_offset.setter
     #def file_offset(self, file_offset):
     #    self._file_offset = file_offset
+
+    @property
+    def entry_size(self):
+        return _bfd.get_section_attribute(self._ptr, SectionAttributes.ENTSIZE)
 
     @property
     def content(self):
